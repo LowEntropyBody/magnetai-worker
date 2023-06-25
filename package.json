@@ -1,0 +1,22 @@
+{
+  "name": "magnetai-worker",
+  "version": "1.0.0",
+  "main": "build/src/main.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=production node build/src/main.js",
+    "clean": "rimraf coverage build tmp",
+    "dev": "ts-node src/main.ts",
+    "build": "tsc -p tsconfig.release.json"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/node": "^20.3.1",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.3.1",
+    "openai": "^3.3.0",
+    "rimraf": "^5.0.1",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.5.3",
+    "typescript": "^5.1.3"
+  }
+}
