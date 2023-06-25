@@ -8,12 +8,11 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 async function runCompletion() {
-  const completion = await openai.createCompletion({
+  const completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
-    prompt: "How are you today?",
-    max_tokens: 4000
+    messages: [{"role": "user", "content": "How are you"}],
   });
-  console.log(completion.data.choices[0].text);
+  console.log(completion.data.choices[0].message.content);
 }
 
 async function main() {
