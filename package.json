@@ -10,7 +10,10 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@polkadot/api": "^10.9.1",
+    "@polkadot/keyring": "^12.3.2",
     "@types/node": "^20.3.1",
+    "bluebird": "^3.7.2",
     "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
     "openai": "^3.3.0",
