@@ -9,7 +9,7 @@ const chain = new Chain(process.env.CHAIN_ADDRESS,process.env.CHAIN_ACCOUNT_SEED
 
 async function main() {
   await chain.init();
-  chain.ask("hello, please introduce yourself");
+  // chain.ask("hello, please introduce yourself");
   await chain.subscribeNewHeadsForAsk(openai);
 }
 
