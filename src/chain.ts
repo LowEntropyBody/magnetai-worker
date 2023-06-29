@@ -66,7 +66,7 @@ export default class Chain {
     async reply(whose: string, nonce: number, question: string, openai: Openai) {
         // 0. Ask the question
         console.log(`Whose: ${whose} Nonce: ${nonce} Question: ${question}`);
-        let answer = "";
+        let answer = "ERROR";
         try {
             answer = await openai.ask(question);
         } catch (error) {
@@ -78,10 +78,6 @@ export default class Chain {
                 console.error("----Second openai try error----");
                 console.error(error);
             }
-        }
-
-        if (answer == "") {
-            return Promise<void>;
         }
 
         console.log(`Answer: ${answer}`);
