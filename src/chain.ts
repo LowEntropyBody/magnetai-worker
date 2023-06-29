@@ -53,7 +53,11 @@ export default class Chain {
                     const nonce = event.data[1];
                     const question = Buffer.from(event.data[2], 'hex').toString();
                     // For demo, no queue
-                    this.reply(whose, nonce, question, openai);
+                    try {
+                        this.reply(whose, nonce, question, openai);
+                    } catch (error) {
+                        console.error(error);
+                    }
                 }
             });
         });
@@ -62,7 +66,24 @@ export default class Chain {
     async reply(whose: string, nonce: number, question: string, openai: Openai) {
         // 0. Ask the question
         console.log(`Whose: ${whose} Nonce: ${nonce} Question: ${question}`);
-        const answer = await openai.ask(question);
+        let answer = "";
+        try {
+            answer = await openai.ask(question);
+        } catch (error) {
+            console.error("----Frist openai try error----");
+            console.error(error);
+            try {
+                answer = await openai.ask(question);
+            } catch (error) {
+                console.error("----Second openai try error----");
+                console.error(error);
+            }
+        }
+
+        if (answer == "") {
+            return Promise<void>;
+        }
+
         console.log(`Answer: ${answer}`);
 
         // 1. Construct add-prepaid tx
