@@ -1,16 +1,15 @@
 import dotenv from "dotenv"
 import Chain from "./chain";
-import Openai from "./openai";
+import Moniter from "./moniter";
 
 dotenv.config();
 
-const openai = new Openai(process.env.OPENAI_API_KEY);
+const moniter = new Moniter();
 const chain = new Chain(process.env.CHAIN_ADDRESS,process.env.CHAIN_ACCOUNT_SEED);
 
 async function main() {
   await chain.init();
-  // chain.ask("hello, please introduce yourself");
-  await chain.subscribeNewHeadsForAsk(openai);
+  await chain.subscribeNewHeads(moniter);
 }
 
 main().catch(e => {

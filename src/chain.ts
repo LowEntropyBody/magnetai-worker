@@ -3,7 +3,7 @@ import { UnsubscribePromise } from '@polkadot/api/types';
 import { Header, Extrinsic, EventRecord } from '@polkadot/types/interfaces';
 import { Keyring } from '@polkadot/keyring';
 import bluebird from 'bluebird';
-import Openai from './openai';
+import Moniter from './moniter';
 
 export default class Chain {
     private api!: ApiPromise;
@@ -31,14 +31,14 @@ export default class Chain {
         }
     }
 
-    async subscribeNewHeadsForAsk(openai: Openai): UnsubscribePromise {
+    async subscribeNewHeads(moniter: Moniter): UnsubscribePromise {
         // Subscribe finalized event
         return await this.api.rpc.chain.subscribeNewHeads((head: Header) =>
-            this.handlerAsk(head, openai)
+            this.handler(head, moniter)
         );
     }
 
-    async handlerAsk(head: Header, openai: Openai) {
+    async handler(head: Header, moniter: Moniter) {
         console.log(`Handle the ${head.number.toNumber()} block`);
         const blockHash = await this.api.rpc.chain.getBlockHash(head.number.toNumber());
         const block = await this.api.rpc.chain.getBlock(blockHash);
@@ -53,58 +53,8 @@ export default class Chain {
                     const nonce = event.data[1];
                     const question = Buffer.from(event.data[2], 'hex').toString();
                     // For demo, no queue
-                    try {
-                        this.reply(whose, nonce, question, openai);
-                    } catch (error) {
-                        console.error(error);
-                    }
                 }
             });
-        });
-    }
-
-    async reply(whose: string, nonce: number, question: string, openai: Openai) {
-        // 0. Ask the question
-        console.log(`Whose: ${whose} Nonce: ${nonce} Question: ${question}`);
-        let answer = "ERROR";
-        try {
-            answer = await openai.ask(question);
-        } catch (error) {
-            console.error("----Frist openai try error----");
-            console.error(error);
-            try {
-                answer = await openai.ask(question);
-            } catch (error) {
-                console.error("----Second openai try error----");
-                console.error(error);
-            }
-        }
-
-        console.log(`Answer: ${answer}`);
-
-        // 1. Construct add-prepaid tx
-        const tx = this.api.tx.ai.reply(nonce, answer);
-
-        // 2. Load seeds(account)
-        const kr = new Keyring({ type: 'sr25519' });
-        const krp = kr.addFromUri(this.seed);
-
-        // 3. Send transaction
-        await this.api.isReadyOrError;
-        return new Promise((resolve, reject) => {
-            tx.signAndSend(krp, ({ events = [], status }) => {
-                console.log(`💸  Tx status: ${status.type}, nonce: ${tx.nonce}`);
-                if (status.isInBlock) {
-                    events.forEach(({ event: { method } }) => {
-                        if (method === 'ExtrinsicSuccess') {
-                            console.log(`✅  Reply success!`);
-                            resolve(true);
-                        }
-                    });
-                }
-            }).catch(e => {
-                reject(e);
-            })
         });
     }
 

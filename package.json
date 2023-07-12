@@ -16,7 +16,6 @@
     "bluebird": "^3.7.2",
     "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
-    "openai": "^3.3.0",
     "rimraf": "^5.0.1",
     "ts-node": "^10.9.1",
     "tslib": "^2.5.3",
