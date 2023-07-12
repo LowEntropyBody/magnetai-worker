@@ -3,7 +3,7 @@ export default class Moniter {
     constructor() {   
     }
 
-    async getInfo(): Promise<string> {
+    async getInfo(startTime: number): Promise<string> {
         return "";
     }
 }
