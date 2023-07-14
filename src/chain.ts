@@ -4,7 +4,7 @@ import { UnsubscribePromise } from '@polkadot/api/types';
 import { Header, Extrinsic } from '@polkadot/types/interfaces';
 import { Keyring } from '@polkadot/keyring';
 import bluebird from 'bluebird';
-import Moniter from './moniter';
+import Monitor from './monitor';
 
 const IntervalBlocks = 5;
 const UpdateTimes = 10;
@@ -47,14 +47,14 @@ export default class Chain {
         }
     }
 
-    async subscribeNewHeads(moniter: Moniter): UnsubscribePromise {
+    async subscribeNewHeads(monitor: Monitor): UnsubscribePromise {
         // Subscribe finalized event
         return await this.api.rpc.chain.subscribeNewHeads((head: Header) =>
-            this.handler(head, moniter)
+            this.handler(head, monitor)
         );
     }
 
-    async handler(head: Header, moniter: Moniter) {
+    async handler(head: Header, monitor: Monitor) {
         const blockNum = head.number.toNumber();
         console.log(`Handle the ${blockNum} block`);
         const blockHash = await this.api.rpc.chain.getBlockHash(blockNum);
@@ -65,7 +65,7 @@ export default class Chain {
         if (this.upload) {
             if (blockNum >= this.startUpdateBlock && !(blockNum % IntervalBlocks)) {
                 try {
-                    this.metricsUpdate(moniter, this.startUpdateTime, this.nonce).finally(() => {
+                    this.metricsUpdate(monitor, this.startUpdateTime, this.nonce).finally(() => {
                         this.currentUpdateTimes++;
                         if (this.currentUpdateTimes == 5) {
                             this.upload = false;
@@ -135,7 +135,7 @@ export default class Chain {
         });
     }
 
-    async metricsUpdate(moniter: Moniter, startTime: number, nonce: number) {
+    async metricsUpdate(monitor: Monitor, startTime: number, nonce: number) {
         // 1. Construct add-prepaid tx
         const tx = this.api.tx.market.metricsUpdate("");
 

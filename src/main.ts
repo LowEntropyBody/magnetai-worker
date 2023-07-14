@@ -1,15 +1,15 @@
 import dotenv from "dotenv"
 import Chain from "./chain";
-import Moniter from "./moniter";
+import Monitor from "./monitor";
 
 dotenv.config();
 
-const moniter = new Moniter();
+const monitor = new Monitor();
 const chain = new Chain(process.env.CHAIN_ADDRESS,process.env.CHAIN_ACCOUNT_SEED);
 
 async function main() {
   await chain.init();
-  await chain.subscribeNewHeads(moniter);
+  await chain.subscribeNewHeads(monitor);
 }
 
 main().catch(e => {
