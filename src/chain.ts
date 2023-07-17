@@ -109,7 +109,7 @@ export default class Chain {
         await this.delay(100);
         console.log(`JOB --- Downloading the model, please wait...`);
         await this.delay(800);
-        console.log(`JOB --- The '${model}' mode has been downloaded successfully`);
+        console.log(`JOB --- The '${model}' model has been downloaded successfully`);
         console.log(`JOB --- Starting the '${model}' service ...`);
         await this.delay(500);
         console.log(`JOB --- The '${model}' service is running now, the API is ${process.env.API_ADDRESS}`);
