@@ -86,7 +86,8 @@ export default class Chain {
                         const model = Buffer.from(event.data[2], 'hex').toString();
                         try {
                             this.startAImodel(who, this.nonce, model).then(async () => {
-                                await this.apiReady(this.nonce, process.env.API_ADDRESS).then(() => {
+                                await this.apiReady(this.nonce, process.env.API_ADDRESS).then(async () => {
+                                    await monitor.updateLastTotal();
                                     this.upload = true;
                                     this.startUpdateBlock = blockNum + 2;
                                 });
