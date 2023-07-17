@@ -16,7 +16,6 @@ export default class Chain {
 
     private upload: boolean;
     private startUpdateBlock: number;
-    private startUpdateTime: number;
     private currentUpdateTimes: number;
     private nonce: number;
 
@@ -26,7 +25,6 @@ export default class Chain {
 
         this.upload = false;
         this.startUpdateBlock = 0;
-        this.startUpdateTime = 0;
         this.currentUpdateTimes = 0;
         this.nonce = 0;
     }
@@ -56,7 +54,7 @@ export default class Chain {
 
     async handler(head: Header, monitor: Monitor) {
         const blockNum = head.number.toNumber();
-        console.log(`Handle the ${blockNum} block`);
+        console.log(`CHAIN --- Handle the ${blockNum} block`);
         const blockHash = await this.api.rpc.chain.getBlockHash(blockNum);
         const block = await this.api.rpc.chain.getBlock(blockHash);
         const exs: Extrinsic[] = block.block.extrinsics;
@@ -65,12 +63,11 @@ export default class Chain {
         if (this.upload) {
             if (blockNum >= this.startUpdateBlock && !(blockNum % IntervalBlocks)) {
                 try {
-                    this.metricsUpdate(monitor, this.startUpdateTime, this.nonce).finally(() => {
+                    this.metricsUpdate(monitor, this.nonce).finally(() => {
                         this.currentUpdateTimes++;
                         if (this.currentUpdateTimes == 5) {
                             this.upload = false;
                             this.startUpdateBlock = 0;
-                            this.startUpdateTime = 0;
                             this.currentUpdateTimes = 0;
                         }
                     });
@@ -88,11 +85,11 @@ export default class Chain {
                         this.nonce = event.data[1];
                         const model = Buffer.from(event.data[2], 'hex').toString();
                         try {
-                            this.startAImodel(who, this.nonce, model);
-                            this.apiReady(this.nonce, process.env.API_ADDRESS).then(() => {
-                                this.upload = true;
-                                this.startUpdateBlock = blockNum + 2;
-                                this.startUpdateTime = Date.parse(new Date().toString());
+                            this.startAImodel(who, this.nonce, model).then(async () => {
+                                await this.apiReady(this.nonce, process.env.API_ADDRESS).then(() => {
+                                    this.upload = true;
+                                    this.startUpdateBlock = blockNum + 2;
+                                });
                             });
                         } catch (error) {
                             console.error(error);
@@ -104,11 +101,22 @@ export default class Chain {
     }
 
     // Demo
-    startAImodel(who: string, nonce: number, model: string) {
+    async startAImodel(who: string, nonce: number, model: string) {
         //Logs
+        console.log(`JOB --- Get AI order from ${who}, nonce number is ${nonce}`);
+        console.log(`JOB --- Prepare for setting up '${model}' service`);
+        await this.delay(100);
+        console.log(`JOB --- Downloading the model, please wait...`);
+        await this.delay(800);
+        console.log(`JOB --- The '${model}' mode has been downloaded successfully`);
+        console.log(`JOB --- Starting the '${model}' service ...`);
+        await this.delay(500);
+        console.log(`JOB --- The '${model}' service is running now, the API is ${process.env.API_ADDRESS}`);
     }
 
     async apiReady(nonce: number, apiAddress: string) {
+        console.log(`CHAIN --- Upload the API '${process.env.API_ADDRESS}' to blockchain, nonce is ${nonce}`);
+
         // 1. Construct add-prepaid tx
         const tx = this.api.tx.market.apiReady(nonce, apiAddress);
 
@@ -120,11 +128,11 @@ export default class Chain {
         await this.api.isReadyOrError;
         return new Promise((resolve, reject) => {
             tx.signAndSend(krp, ({ events = [], status }) => {
-                console.log(`💸  Tx status: ${status.type}, nonce: ${tx.nonce}`);
+                console.log(`CHAIN --- 💸  Tx status: ${status.type}, nonce: ${tx.nonce}`);
                 if (status.isInBlock) {
                     events.forEach(({ event: { method } }) => {
                         if (method === 'ExtrinsicSuccess') {
-                            console.log(`✅  API ready success!`);
+                            console.log(`CHAIN --- ✅  API ready success!`);
                             resolve(true);
                         }
                     });
@@ -135,9 +143,12 @@ export default class Chain {
         });
     }
 
-    async metricsUpdate(monitor: Monitor, startTime: number, nonce: number) {
+    async metricsUpdate(monitor: Monitor, nonce: number) {
+        const metrics = await monitor.getInfo();
+        console.log(`CHAIN --- Upload the metrics '${metrics}' to blockchain, nonce is ${nonce}`);
+
         // 1. Construct add-prepaid tx
-        const tx = this.api.tx.market.metricsUpdate("");
+        const tx = this.api.tx.market.metricsUpdate(metrics);
 
         // 2. Load seeds(account)
         const kr = new Keyring({ type: 'sr25519' });
@@ -147,11 +158,11 @@ export default class Chain {
         await this.api.isReadyOrError;
         return new Promise((resolve, reject) => {
             tx.signAndSend(krp, ({ events = [], status }) => {
-                console.log(`💸  Tx status: ${status.type}, nonce: ${tx.nonce}`);
+                console.log(`CHAIN --- 💸  Tx status: ${status.type}, nonce: ${tx.nonce}`);
                 if (status.isInBlock) {
                     events.forEach(({ event: { method } }) => {
                         if (method === 'ExtrinsicSuccess') {
-                            console.log(`✅  Metrics Update success!`);
+                            console.log(`CHAIN --- ✅  Metrics Update success!`);
                             resolve(true);
                         }
                     });
@@ -160,5 +171,9 @@ export default class Chain {
                 reject(e);
             })
         });
+    }
+
+    async delay(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 }

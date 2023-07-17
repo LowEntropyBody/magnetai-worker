@@ -48,7 +48,8 @@ export default class Monitor {
         }
       }
     } catch (e: any) {
-      console.error(`Get information from worker failed, error message:${e.message}.`);
+      //console.error(`Get information from worker failed, error message:${e.message}.`);
+      throw new Error(`Get information from worker failed, error message:${e.message}`);
     }
 
     // Get gpu information
@@ -70,7 +71,8 @@ export default class Monitor {
         gpuInfo = JSON.parse(gpuInfoStr);
       }
     } catch (e: any) {
-      console.error(`Get information from nvidia failed, error message:${e}`);
+      //console.error(`Get information from nvidia failed, error message:${e}`);
+      throw new Error(`Get information from nvidia failed, error message:${e}`);
     }
 
     return {
