@@ -63,7 +63,7 @@ export default class Chain {
         if (this.upload) {
             if (blockNum >= this.startUpdateBlock && !(blockNum % IntervalBlocks)) {
                 try {
-                    this.metricsUpdate(monitor, this.nonce).finally(() => {
+                    this.metricsUpdate(monitor, this.nonce).catch((err) => {console.error(err)}).finally(() => {
                         this.currentUpdateTimes++;
                         if (this.currentUpdateTimes == 5) {
                             this.upload = false;
@@ -89,9 +89,9 @@ export default class Chain {
                                 await this.apiReady(this.nonce, process.env.API_ADDRESS).then(async () => {
                                     await monitor.updateLastTotal();
                                     this.upload = true;
-                                    this.startUpdateBlock = blockNum + 2;
+                                    this.startUpdateBlock = blockNum + 3;
                                 });
-                            });
+                            }).catch((err) => {console.error(err)});
                         } catch (error) {
                             console.error(error);
                         }
@@ -145,11 +145,11 @@ export default class Chain {
     }
 
     async metricsUpdate(monitor: Monitor, nonce: number) {
-        const metrics = await monitor.getInfo();
+        const metrics = JSON.stringify(await monitor.getInfo());
         console.log(`CHAIN --- Upload the metrics '${metrics}' to blockchain, nonce is ${nonce}`);
 
         // 1. Construct add-prepaid tx
-        const tx = this.api.tx.market.uploadMetrics(metrics);
+        const tx = this.api.tx.market.uploadMetrics(nonce, metrics);
 
         // 2. Load seeds(account)
         const kr = new Keyring({ type: 'sr25519' });
