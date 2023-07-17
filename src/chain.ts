@@ -80,7 +80,7 @@ export default class Chain {
                 events.forEach((record) => {
                     const { event, phase } = record;
                     // data should be like [who, nonce, model]
-                    if (event.section === 'market' && event.method === 'newOrder' && event.data.length >= 3) {
+                    if (event.section === 'market' && event.method === 'Order' && event.data.length >= 3) {
                         const who = event.data[0];
                         this.nonce = event.data[1];
                         const model = Buffer.from(event.data[2], 'hex').toString();
