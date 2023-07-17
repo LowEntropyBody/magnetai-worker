@@ -65,7 +65,7 @@ export default class Chain {
                 try {
                     this.metricsUpdate(monitor, this.nonce).catch((err) => {console.error(err)}).finally(() => {
                         this.currentUpdateTimes++;
-                        if (this.currentUpdateTimes == 5) {
+                        if (this.currentUpdateTimes == UpdateTimes) {
                             this.upload = false;
                             this.startUpdateBlock = 0;
                             this.currentUpdateTimes = 0;
