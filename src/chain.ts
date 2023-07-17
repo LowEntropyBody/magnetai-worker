@@ -80,7 +80,7 @@ export default class Chain {
                 events.forEach((record) => {
                     const { event, phase } = record;
                     // data should be like [who, nonce, model]
-                    if (event.section === 'market' && event.method === 'Order' && event.data.length >= 3) {
+                    if (event.section === 'market' && event.method === 'newOrder' && event.data.length >= 3) {
                         const who = event.data[0];
                         this.nonce = event.data[1];
                         const model = Buffer.from(event.data[2], 'hex').toString();
@@ -149,7 +149,7 @@ export default class Chain {
         console.log(`CHAIN --- Upload the metrics '${metrics}' to blockchain, nonce is ${nonce}`);
 
         // 1. Construct add-prepaid tx
-        const tx = this.api.tx.market.metricsUpdate(metrics);
+        const tx = this.api.tx.market.uploadMetrics(metrics);
 
         // 2. Load seeds(account)
         const kr = new Keyring({ type: 'sr25519' });
@@ -163,7 +163,7 @@ export default class Chain {
                 if (status.isInBlock) {
                     events.forEach(({ event: { method } }) => {
                         if (method === 'ExtrinsicSuccess') {
-                            console.log(`CHAIN --- ✅  Metrics Update success!`);
+                            console.log(`CHAIN --- ✅  Upload Metrics success!`);
                             resolve(true);
                         }
                     });
